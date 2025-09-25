@@ -11,28 +11,26 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
-import axios from "axios";
+import { fetchAllUsers, fetchAllDevices } from "../../../services/apiService";
 
 function Dashboard() {
-  const api = axios.create({
-    baseURL: "https://wisenergy-backend.onrender.com",
-  });
   // Mock data (replace with API/DB later)
   const [totalUsers, setTotalUsers] = useState(0);
-  const activeDevices = 123;
+  const [totalDevices, setTotalDevices] = useState(0);
   const avgRating = 4.23;
   const totalFeedback = 123;
 
   useEffect(() => {
-    const fetchTotalUsers = async () => {
-      try {
-        const response = await api.get("/users");
-        setTotalUsers(response.data.length);
-      } catch (error) {
-        console.error("Error fetching total users:", error);
-      }
+    const fetchUsers = async () => {
+      const result = await fetchAllUsers();
+      setTotalUsers(result);
     };
-    fetchTotalUsers();
+    fetchUsers();
+    const fetchDevices = async () => {
+      const result = await fetchAllDevices();
+      setTotalDevices(result);
+    };
+    fetchDevices();
   }, []);
 
   const feedbackTypeData = [
@@ -63,7 +61,7 @@ function Dashboard() {
         <div className="bg-[#24924B] text-white rounded-lg p-6 shadow flex justify-between items-center">
           <div>
             <h3 className="text-lg">Total Users</h3>
-            <p className="text-3xl font-bold">{totalUsers}</p>
+            <p className="text-3xl font-bold">{totalUsers?.length}</p>
           </div>
           <Users className="w-10 h-10 opacity-80" />
         </div>
@@ -72,7 +70,7 @@ function Dashboard() {
         <div className="bg-[#72C090] text-white rounded-lg p-6 shadow flex justify-between items-center">
           <div>
             <h3 className="text-lg">Active Devices</h3>
-            <p className="text-3xl font-bold">{activeDevices}</p>
+            <p className="text-3xl font-bold">{totalDevices?.length}</p>
           </div>
           <Plug className="w-10 h-10 opacity-80" />
         </div>

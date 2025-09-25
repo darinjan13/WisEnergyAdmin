@@ -1,43 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Filter, RotateCcw } from "lucide-react";
+import { fetchAllDevices, fetchDeviceById } from "../../../services/apiService";
 
 function Devices() {
-  const [devices] = useState([
-    {
-      id: "00001",
-      deviceName: "Twinky",
-      email: "sample@gmail.com",
-      pairingCode: "ABC123",
-      pairedAt: "2025-03-14",
-      registeredAt: "2025-03-14",
-      status: "Active",
-    },
-    {
-      id: "00002",
-      deviceName: "Rosie",
-      email: "sample@gmail.com",
-      pairingCode: "XYZ789",
-      pairedAt: "2025-03-14",
-      registeredAt: "2025-03-14",
-      status: "Inactive",
-    },
-  ]);
+  const [devices, setDevices] = useState([]);
+
+  useEffect(() => {
+    const fetchDevicesData = async () => {
+      try {
+        const response = await fetchAllDevices();
+        setDevices(response);
+      } catch (error) {
+        console.error("Error fetching devices:", error);
+      }
+    };
+
+    fetchDevicesData();
+  }, []);
 
   return (
     <div className="p-6">
-      {/* Page Title */}
       <h1 className="text-2xl font-bold mb-6">Devices</h1>
 
       {/* Filter bar */}
       <div className="flex items-center justify-between bg-white rounded-lg shadow px-4 py-3 mb-6">
-        {/* Left side: Filter options */}
         <div className="flex items-center divide-x divide-gray-200">
           <div className="flex items-center gap-2 px-4">
             <Filter className="w-5 h-5 text-gray-600" />
             <span className="text-sm font-medium text-gray-700">Filter By</span>
           </div>
 
-          {/* Location */}
           <div className="px-4">
             <select className="bg-transparent text-sm text-gray-700 focus:outline-none">
               <option>Location</option>
@@ -46,7 +38,6 @@ function Devices() {
             </select>
           </div>
 
-          {/* Status */}
           <div className="px-4">
             <select className="bg-transparent text-sm text-gray-700 focus:outline-none">
               <option>Status</option>
@@ -55,7 +46,6 @@ function Devices() {
             </select>
           </div>
 
-          {/* Date Registered */}
           <div className="px-4">
             <input
               type="date"
@@ -63,7 +53,6 @@ function Devices() {
             />
           </div>
 
-          {/* Reset Filter */}
           <div className="px-4">
             <button className="flex items-center gap-2 text-red-500 hover:text-red-600 text-sm font-medium">
               <RotateCcw className="w-4 h-4" />
@@ -88,17 +77,17 @@ function Devices() {
             </tr>
           </thead>
           <tbody>
-            {devices.map((d) => (
+            {devices?.map((d, index) => (
               <tr
-                key={d.id}
+                key={d.device_id || index}
                 className="border-b hover:bg-gray-50 transition-colors"
               >
                 <td className="p-3">{d.id}</td>
-                <td className="p-3">{d.deviceName}</td>
-                <td className="p-3">{d.email}</td>
-                <td className="p-3">{d.pairingCode}</td>
-                <td className="p-3">{d.pairedAt}</td>
-                <td className="p-3">{d.registeredAt}</td>
+                <td className="p-3">{d.device_nickname}</td>
+                <td className="p-3">{d.owner_email}</td>
+                <td className="p-3">{d.pairing_code}</td>
+                <td className="p-3">{d.paired_at}</td>
+                <td className="p-3">{d.register_at}</td>
                 <td className="p-3">{d.status}</td>
               </tr>
             ))}

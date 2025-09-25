@@ -1,54 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Filter, RotateCcw } from "lucide-react";
+import { fetchAllFeedbacks } from "../../../services/apiService";
 
 function Feedback() {
-  const [feedback] = useState([
-    {
-      id: "00001",
-      type: "Bug Report",
-      message: "How to purchase?",
-      email: "sample@gmail.com",
-      location: "Mandaue City",
-      created: "2025-03-14",
-      status: "Resolved",
-    },
-    {
-      id: "00002",
-      type: "Suggestion",
-      message: "How to purchase?",
-      email: "sample@gmail.com",
-      location: "Mandaue City",
-      created: "2025-03-14",
-      status: "Open",
-    },
-    {
-      id: "00003",
-      type: "Question",
-      message: "How to purchase?",
-      email: "sample@gmail.com",
-      location: "Mandaue City",
-      created: "2025-03-14",
-      status: "Open",
-    },
-    {
-      id: "00006",
-      type: "Bug Report",
-      message: "How to purchase?",
-      email: "sample@gmail.com",
-      location: "Lapu-lapu City",
-      created: "2025-03-14",
-      status: "Reviewed",
-    },
-    {
-      id: "00008",
-      type: "Suggestion",
-      message: "How to purchase?",
-      email: "sample@gmail.com",
-      location: "Lapu-lapu City",
-      created: "2025-03-14",
-      status: "In Progress",
-    },
-  ]);
+  const [feedback, setFeedback] = useState();
+
+  useEffect(() => {
+    const fetchAllFeedback = async () => {
+      const response = await fetchAllFeedbacks();
+      setFeedback(response);
+    };
+    fetchAllFeedback();
+  }, []);
 
   const statusColors = {
     Open: "bg-blue-100 text-blue-600",
@@ -124,7 +87,7 @@ function Feedback() {
             </tr>
           </thead>
           <tbody>
-            {feedback.map((f) => (
+            {feedback?.map((f) => (
               <tr
                 key={f.id}
                 className="border-b hover:bg-gray-50 transition-colors"
@@ -152,7 +115,7 @@ function Feedback() {
 
       {/* Pagination */}
       <div className="flex justify-between items-center text-sm text-gray-600 mt-4">
-        <p>Showing 1-{feedback.length} of 78</p>
+        <p>Showing 1-{feedback?.length} of 78</p>
         <div className="flex gap-2">
           <button className="px-3 py-1 border rounded hover:bg-gray-100">
             &lt;

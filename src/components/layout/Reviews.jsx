@@ -1,30 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Filter, RotateCcw } from "lucide-react";
+import { fetchAllReviews } from "../../../services/apiService";
 
 function Reviews() {
-  const [reviews] = useState([
-    {
-      id: "00001",
-      rating: 5,
-      message: "Great App",
-      email: "sample@gmail.com",
-      created: "2025-03-14",
-    },
-    {
-      id: "00002",
-      rating: 2,
-      message: "Needs improvement",
-      email: "sample@gmail.com",
-      created: "2025-03-14",
-    },
-    {
-      id: "00003",
-      rating: 4,
-      message: "Pretty good",
-      email: "sample@gmail.com",
-      created: "2025-03-14",
-    },
-  ]);
+  const [reviews, setReviews] = useState();
+
+  useEffect(() => {
+    const fetchAllReview = async () => {
+      const response = await fetchAllReviews();
+      setReviews(response);
+    };
+    fetchAllReview();
+  }, []);
 
   // Helper to render stars
   const renderStars = (count) => "★".repeat(count) + "☆".repeat(5 - count);
@@ -85,7 +72,7 @@ function Reviews() {
             </tr>
           </thead>
           <tbody>
-            {reviews.map((r) => (
+            {reviews?.map((r) => (
               <tr
                 key={r.id}
                 className="border-b hover:bg-gray-50 transition-colors"
@@ -103,7 +90,7 @@ function Reviews() {
 
       {/* Pagination */}
       <div className="flex justify-between items-center text-sm text-gray-600 mt-4">
-        <p>Showing 1-{reviews.length} of 78</p>
+        <p>Showing 1-{reviews?.length} of 78</p>
         <div className="flex gap-2">
           <button className="px-3 py-1 border rounded hover:bg-gray-100">
             &lt;

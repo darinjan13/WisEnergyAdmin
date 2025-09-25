@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Filter, RotateCcw, Plus, Edit2, Trash2 } from "lucide-react";
 import UserModal from "./UserModal";
+import { fetchAllUsers } from "../../../services/apiService";
 
 function Users() {
   const [showAddMenu, setShowAddMenu] = useState(false);
@@ -8,28 +9,17 @@ function Users() {
   const [editUser, setEditUser] = useState(null);
   const [newRole, setNewRole] = useState("User"); // default for Add
 
-  const [users, setUsers] = useState([
-    {
-      id: "00001",
-      firstName: "Twinky",
-      lastName: "Casidsid",
-      email: "sample@gmail.com",
-      location: "Mandaue City",
-      role: "Admin",
-      created: "2025-03-14",
-      modified: "2025-03-14",
-    },
-    {
-      id: "00002",
-      firstName: "Rosie",
-      lastName: "Pearson",
-      email: "sample@gmail.com",
-      location: "Mandaue City",
-      role: "User",
-      created: "2025-03-14",
-      modified: "2025-03-14",
-    },
-  ]);
+  // const [users, setUsers] = useState();
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const result = await fetchAllUsers();
+      setUsers(result);
+      console.log(result);
+    };
+    fetchUsers();
+  }, []);
+
+  const [users, setUsers] = useState();
 
   const handleAdd = (role = "User") => {
     setEditUser(null); // no initial data
@@ -161,14 +151,14 @@ function Users() {
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => (
+              {users?.map((u) => (
                 <tr
-                  key={u.id}
+                  key={u.uid}
                   className="border-b hover:bg-gray-50 transition-colors"
                 >
-                  <td className="p-3">{u.id}</td>
-                  <td className="p-3">{u.firstName}</td>
-                  <td className="p-3">{u.lastName}</td>
+                  <td className="p-3">{u.uid}</td>
+                  <td className="p-3">{u.first_name}</td>
+                  <td className="p-3">{u.last_name}</td>
                   <td className="p-3">{u.email}</td>
                   <td className="p-3">{u.location}</td>
                   <td className="p-3">{u.role}</td>
@@ -196,7 +186,7 @@ function Users() {
 
         {/* Pagination */}
         <div className="flex justify-between items-center text-sm text-gray-600 mt-4">
-          <p>Showing 1-{users.length} of 78</p>
+          <p>Showing 1-{users?.length} of 78</p>
           <div className="flex gap-2">
             <button className="px-3 py-1 border rounded hover:bg-gray-100">
               &lt;
