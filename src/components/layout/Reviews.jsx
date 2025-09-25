@@ -81,7 +81,7 @@ function Reviews() {
                 <td className="p-3">{renderStars(r.rating)}</td>
                 <td className="p-3">{r.message}</td>
                 <td className="p-3">{r.email}</td>
-                <td className="p-3">{r.created}</td>
+                <td className="p-3">{r.created_at}</td>
               </tr>
             ))}
           </tbody>

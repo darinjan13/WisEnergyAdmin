@@ -81,7 +81,6 @@ function Feedback() {
               <th className="p-3">Type</th>
               <th className="p-3">Message</th>
               <th className="p-3">Email</th>
-              <th className="p-3">Location</th>
               <th className="p-3">Date Created</th>
               <th className="p-3">Status</th>
             </tr>
@@ -96,8 +95,7 @@ function Feedback() {
                 <td className="p-3">{f.type}</td>
                 <td className="p-3">{f.message}</td>
                 <td className="p-3">{f.email}</td>
-                <td className="p-3">{f.location}</td>
-                <td className="p-3">{f.created}</td>
+                <td className="p-3">{f.date_created}</td>
                 <td className="p-3">
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${

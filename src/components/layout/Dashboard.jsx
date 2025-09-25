@@ -11,14 +11,19 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
-import { fetchAllUsers, fetchAllDevices } from "../../../services/apiService";
+import {
+  fetchAllUsers,
+  fetchAllDevices,
+  fetchAllReviews,
+  fetchAllFeedbacks,
+} from "../../../services/apiService";
 
 function Dashboard() {
-  // Mock data (replace with API/DB later)
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [totalDevices, setTotalDevices] = useState(0);
-  const avgRating = 4.23;
-  const totalFeedback = 123;
+  const [totalUsers, setTotalUsers] = useState([]);
+  const [totalDevices, setTotalDevices] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [feedback, setFeedback] = useState([]);
+  const [avgRating, setAvgRating] = useState(0);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -26,11 +31,29 @@ function Dashboard() {
       setTotalUsers(result);
     };
     fetchUsers();
+
     const fetchDevices = async () => {
       const result = await fetchAllDevices();
       setTotalDevices(result);
     };
     fetchDevices();
+
+    const fetchFeedback = async () => {
+      const result = await fetchAllFeedbacks();
+      setFeedback(result);
+    };
+    fetchFeedback();
+
+    const fetchReviews = async () => {
+      const result = await fetchAllReviews();
+      setReviews(result);
+
+      if (result?.length > 0) {
+        const sum = result.reduce((acc, r) => acc + r.rating, 0);
+        setAvgRating(sum / result.length);
+      }
+    };
+    fetchReviews();
   }, []);
 
   const feedbackTypeData = [
@@ -67,7 +90,7 @@ function Dashboard() {
         </div>
 
         {/* Active Devices */}
-        <div className="bg-[#72C090] text-white rounded-lg p-6 shadow flex justify-between items-center">
+        <div className="bg-[#4a8761] text-white rounded-lg p-6 shadow flex justify-between items-center">
           <div>
             <h3 className="text-lg">Active Devices</h3>
             <p className="text-3xl font-bold">{totalDevices?.length}</p>
@@ -76,10 +99,12 @@ function Dashboard() {
         </div>
 
         {/* Average Rating */}
-        <div className="bg-[#A5D6A7] text-white rounded-lg p-6 shadow flex justify-between items-center">
+        <div className="bg-[#027833] text-white rounded-lg p-6 shadow flex justify-between items-center">
           <div>
             <h3 className="text-lg">Average Rating</h3>
-            <p className="text-3xl font-bold">{avgRating}</p>
+            <p className="text-3xl font-bold">
+              {avgRating ? avgRating.toFixed(2) : "N/A"}
+            </p>
           </div>
           <Star className="w-10 h-10 opacity-80" />
         </div>
@@ -88,7 +113,7 @@ function Dashboard() {
         <div className="bg-[#43A866] text-white rounded-lg p-6 shadow flex justify-between items-center">
           <div>
             <h3 className="text-lg">Total Feedback</h3>
-            <p className="text-3xl font-bold">{totalFeedback}</p>
+            <p className="text-3xl font-bold">{feedback?.length}</p>
           </div>
           <MessageSquare className="w-10 h-10 opacity-80" />
         </div>
@@ -119,27 +144,6 @@ function Dashboard() {
                   <td className="p-2">user1@mail.com</td>
                   <td className="p-2">2025-09-20</td>
                 </tr>
-                <tr>
-                  <td className="p-2">1</td>
-                  <td className="p-2">5 ⭐</td>
-                  <td className="p-2">Great app!</td>
-                  <td className="p-2">user1@mail.com</td>
-                  <td className="p-2">2025-09-20</td>
-                </tr>
-                <tr>
-                  <td className="p-2">1</td>
-                  <td className="p-2">5 ⭐</td>
-                  <td className="p-2">Great app!</td>
-                  <td className="p-2">user1@mail.com</td>
-                  <td className="p-2">2025-09-20</td>
-                </tr>
-                <tr>
-                  <td className="p-2">1</td>
-                  <td className="p-2">5 ⭐</td>
-                  <td className="p-2">Great app!</td>
-                  <td className="p-2">user1@mail.com</td>
-                  <td className="p-2">2025-09-20</td>
-                </tr>
               </tbody>
             </table>
           </div>
@@ -159,30 +163,6 @@ function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="p-2">1</td>
-                  <td className="p-2">Bug</td>
-                  <td className="p-2">App crashed</td>
-                  <td className="p-2">user2@mail.com</td>
-                  <td className="p-2">2025-09-19</td>
-                  <td className="p-2">Open</td>
-                </tr>
-                <tr>
-                  <td className="p-2">1</td>
-                  <td className="p-2">Bug</td>
-                  <td className="p-2">App crashed</td>
-                  <td className="p-2">user2@mail.com</td>
-                  <td className="p-2">2025-09-19</td>
-                  <td className="p-2">Open</td>
-                </tr>
-                <tr>
-                  <td className="p-2">1</td>
-                  <td className="p-2">Bug</td>
-                  <td className="p-2">App crashed</td>
-                  <td className="p-2">user2@mail.com</td>
-                  <td className="p-2">2025-09-19</td>
-                  <td className="p-2">Open</td>
-                </tr>
                 <tr>
                   <td className="p-2">1</td>
                   <td className="p-2">Bug</td>

@@ -21,7 +21,7 @@ function Login() {
     <div
       className="relative min-h-screen w-full flex items-center justify-center"
       style={{
-        backgroundImage: "url('/loginadminbg2.png')",
+        backgroundImage: "url('/adminloginbg.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",

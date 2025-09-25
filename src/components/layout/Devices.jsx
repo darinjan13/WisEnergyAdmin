@@ -69,7 +69,7 @@ function Devices() {
             <tr className="bg-green-200 text-left text-gray-700">
               <th className="p-3">ID</th>
               <th className="p-3">Device Name</th>
-              <th className="p-3">Email (Owner)</th>
+              <th className="p-3">Owner</th>
               <th className="p-3">Pairing Code</th>
               <th className="p-3">Paired At</th>
               <th className="p-3">Registered At</th>
@@ -84,7 +84,7 @@ function Devices() {
               >
                 <td className="p-3">{d.id}</td>
                 <td className="p-3">{d.device_nickname}</td>
-                <td className="p-3">{d.owner_email}</td>
+                <td className="p-3">{d.owner}</td>
                 <td className="p-3">{d.pairing_code}</td>
                 <td className="p-3">{d.paired_at}</td>
                 <td className="p-3">{d.register_at}</td>
