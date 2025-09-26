@@ -3,18 +3,51 @@ import { Filter, RotateCcw } from "lucide-react";
 import { fetchAllReviews } from "../../../services/apiService";
 
 function Reviews() {
-  const [reviews, setReviews] = useState();
+  const [reviews, setReviews] = useState([]);
+  const [filteredReviews, setFilteredReviews] = useState([]);
+  const [ratingFilter, setRatingFilter] = useState(""); // Filter for rating
+  const [dateFilter, setDateFilter] = useState(""); // Filter for date
 
   useEffect(() => {
     const fetchAllReview = async () => {
       const response = await fetchAllReviews();
       setReviews(response);
+      setFilteredReviews(response); // Initialize filteredReviews with all reviews
     };
     fetchAllReview();
   }, []);
 
   // Helper to render stars
   const renderStars = (count) => "★".repeat(count) + "☆".repeat(5 - count);
+
+  useEffect(() => {
+    let filtered = reviews;
+
+    // Filter by rating
+    if (ratingFilter) {
+      const ratingValue = parseInt(ratingFilter[0], 10); // Extract the rating value from the filter
+      filtered = filtered.filter((review) => review.rating === ratingValue);
+    }
+
+    // Filter by date
+    if (dateFilter) {
+      const filteredByDate = filtered.filter((review) => {
+        const reviewDate = new Date(review.created_at); // Assuming created_at is in ISO format
+        const filterDate = new Date(dateFilter);
+        return reviewDate.toDateString() === filterDate.toDateString(); // Only matches the selected date
+      });
+      filtered = filteredByDate;
+    }
+
+    setFilteredReviews(filtered);
+  }, [ratingFilter, dateFilter, reviews]);
+
+  // Reset all filters
+  const handleResetFilters = () => {
+    setRatingFilter("");
+    setDateFilter("");
+    setFilteredReviews(reviews); // Reset to all reviews
+  };
 
   return (
     <div className="p-6">
@@ -31,27 +64,42 @@ function Reviews() {
 
           {/* Rating Filter */}
           <div className="px-4">
-            <select className="bg-transparent text-sm text-gray-700 focus:outline-none">
-              <option>Rating</option>
-              <option>5 Stars</option>
-              <option>4 Stars</option>
-              <option>3 Stars</option>
-              <option>2 Stars</option>
-              <option>1 Star</option>
+            <select
+              className="bg-transparent text-sm text-gray-700 focus:outline-none"
+              value={ratingFilter}
+              onChange={(e) => setRatingFilter(e.target.value)}
+            >
+              <option value="">Rating</option>
+              <option value="5 Stars">5 Stars</option>
+              <option value="4 Stars">4 Stars</option>
+              <option value="3 Stars">3 Stars</option>
+              <option value="2 Stars">2 Stars</option>
+              <option value="1 Star">1 Star</option>
             </select>
           </div>
 
           {/* Date Filter */}
           <div className="px-4">
+            <label
+                htmlFor="dateCreated"
+                className="font-semibold text-sm  text-gray-700 mr-2"
+              >
+                Date Created
+              </label>
             <input
               type="date"
               className="bg-transparent text-sm text-gray-700 focus:outline-none"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
             />
           </div>
 
           {/* Reset Filter */}
           <div className="px-4">
-            <button className="flex items-center gap-2 text-red-500 hover:text-red-600 text-sm font-medium">
+            <button
+              onClick={handleResetFilters}
+              className="flex items-center gap-2 text-red-500 hover:text-red-600 text-sm font-medium"
+            >
               <RotateCcw className="w-4 h-4" />
               Reset Filter
             </button>
@@ -72,7 +120,7 @@ function Reviews() {
             </tr>
           </thead>
           <tbody>
-            {reviews?.map((r) => (
+            {filteredReviews?.map((r) => (
               <tr
                 key={r.id}
                 className="border-b hover:bg-gray-50 transition-colors"
@@ -90,7 +138,7 @@ function Reviews() {
 
       {/* Pagination */}
       <div className="flex justify-between items-center text-sm text-gray-600 mt-4">
-        <p>Showing 1-{reviews?.length} of 78</p>
+        <p>Showing 1-{filteredReviews?.length} of {filteredReviews?.length}</p>
         <div className="flex gap-2">
           <button className="px-3 py-1 border rounded hover:bg-gray-100">
             &lt;

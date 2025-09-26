@@ -3,21 +3,59 @@ import { Filter, RotateCcw } from "lucide-react";
 import { fetchAllFeedbacks } from "../../../services/apiService";
 
 function Feedback() {
-  const [feedback, setFeedback] = useState();
-
-  useEffect(() => {
-    const fetchAllFeedback = async () => {
-      const response = await fetchAllFeedbacks();
-      setFeedback(response);
-    };
-    fetchAllFeedback();
-  }, []);
+  const [feedback, setFeedback] = useState([]);
+  const [filteredFeedback, setFilteredFeedback] = useState([]);
+  const [typeFilter, setTypeFilter] = useState(""); // Type filter
+  const [statusFilter, setStatusFilter] = useState(""); // Status filter
+  const [dateFilter, setDateFilter] = useState(""); // Date filter
 
   const statusColors = {
     Open: "bg-blue-100 text-blue-600",
     Resolved: "bg-green-100 text-green-600",
     Reviewed: "bg-yellow-100 text-yellow-600",
     "In Progress": "bg-pink-100 text-pink-600",
+  };
+
+  useEffect(() => {
+    const fetchAllFeedback = async () => {
+      const response = await fetchAllFeedbacks();
+      setFeedback(response);
+      setFilteredFeedback(response); // Initialize filteredFeedback with all feedback
+    };
+    fetchAllFeedback();
+  }, []);
+
+  useEffect(() => {
+    let filtered = feedback;
+
+    // Filter by type
+    if (typeFilter) {
+      filtered = filtered.filter((f) => f.type === typeFilter);
+    }
+
+    // Filter by status
+    if (statusFilter) {
+      filtered = filtered.filter((f) => f.status === statusFilter);
+    }
+
+    // Filter by date
+    if (dateFilter) {
+      const filterDate = new Date(dateFilter);
+      filtered = filtered.filter((f) => {
+        const feedbackDate = new Date(f.date_created);
+        return feedbackDate.toDateString() === filterDate.toDateString(); // Only matches the selected date
+      });
+    }
+
+    setFilteredFeedback(filtered);
+  }, [typeFilter, statusFilter, dateFilter, feedback]);
+
+  // Reset all filters
+  const handleResetFilters = () => {
+    setTypeFilter("");
+    setStatusFilter("");
+    setDateFilter("");
+    setFilteredFeedback(feedback); // Reset to all feedback
   };
 
   return (
@@ -35,36 +73,55 @@ function Feedback() {
 
           {/* Type Filter */}
           <div className="px-4">
-            <select className="bg-transparent text-sm text-gray-700 focus:outline-none">
-              <option>Type</option>
-              <option>Bug Report</option>
-              <option>Suggestion</option>
-              <option>Question</option>
+            <select
+              className="bg-transparent text-sm text-gray-700 focus:outline-none"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+            >
+              <option value="">Type</option>
+              <option value="Bug Report">Bug Report</option>
+              <option value="Suggestion">Suggestion</option>
+              <option value="Question">Question</option>
             </select>
           </div>
 
           {/* Status Filter */}
           <div className="px-4">
-            <select className="bg-transparent text-sm text-gray-700 focus:outline-none">
-              <option>Status</option>
-              <option>Open</option>
-              <option>Resolved</option>
-              <option>Reviewed</option>
-              <option>In Progress</option>
+            <select
+              className="bg-transparent text-sm text-gray-700 focus:outline-none"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">Status</option>
+              <option value="Open">Open</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Reviewed">Reviewed</option>
+              <option value="In Progress">In Progress</option>
             </select>
           </div>
 
-          {/* Date Created */}
+          {/* Date Created Filter */}
           <div className="px-4">
+            <label
+              htmlFor="dateCreated"
+              className="font-semibold text-sm  text-gray-700 mr-2"
+            >
+              Date Created
+            </label>
             <input
               type="date"
               className="bg-transparent text-sm text-gray-700 focus:outline-none"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
             />
           </div>
 
           {/* Reset Filter */}
           <div className="px-4">
-            <button className="flex items-center gap-2 text-red-500 hover:text-red-600 text-sm font-medium">
+            <button
+              onClick={handleResetFilters}
+              className="flex items-center gap-2 text-red-500 hover:text-red-600 text-sm font-medium"
+            >
               <RotateCcw className="w-4 h-4" />
               Reset Filter
             </button>
@@ -86,7 +143,7 @@ function Feedback() {
             </tr>
           </thead>
           <tbody>
-            {feedback?.map((f) => (
+            {filteredFeedback?.map((f) => (
               <tr
                 key={f.id}
                 className="border-b hover:bg-gray-50 transition-colors"
@@ -113,7 +170,9 @@ function Feedback() {
 
       {/* Pagination */}
       <div className="flex justify-between items-center text-sm text-gray-600 mt-4">
-        <p>Showing 1-{feedback?.length} of 78</p>
+        <p>
+          Showing 1-{filteredFeedback?.length} of {filteredFeedback?.length}
+        </p>
         <div className="flex gap-2">
           <button className="px-3 py-1 border rounded hover:bg-gray-100">
             &lt;

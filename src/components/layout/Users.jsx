@@ -9,23 +9,72 @@ function Users() {
   const [editUser, setEditUser] = useState(null);
   const [newRole, setNewRole] = useState("User"); // default for Add
 
-  // const [users, setUsers] = useState();
+  // User data and filtered users
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+
+  // Filter states
+  const [locationFilter, setLocationFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [startDateFilter, setStartDateFilter] = useState(""); // Start date filter
+  const [endDateFilter, setEndDateFilter] = useState(""); // End date filter
+
+  const formatDate = (date) => {
+    const d = new Date(date);
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  };
+  // Fetch users
   useEffect(() => {
     const fetchUsers = async () => {
       const result = await fetchAllUsers();
       setUsers(result);
-      console.log(result);
+      setFilteredUsers(result); // Initialize filtered users with all users
     };
     fetchUsers();
   }, []);
 
-  const [users, setUsers] = useState();
+  // Handle filtering logic
+  useEffect(() => {
+    let filtered = users;
+
+    // Filter by location
+    if (locationFilter) {
+      filtered = filtered.filter((user) => user.location === locationFilter);
+    }
+
+    // Filter by role
+    if (roleFilter) {
+      filtered = filtered.filter((user) => user.role === roleFilter);
+    }
+
+    // Filter by start date and end date range
+    if (startDateFilter && endDateFilter) {
+      filtered = filtered.filter((user) => {
+        const userCreatedDate = new Date(user.created_at?.split("T")[0]); // Convert user.created_at to Date object
+        const startDate = new Date(startDateFilter); // Convert startDate to Date object
+        const endDate = new Date(endDateFilter); // Convert endDate to Date object
+
+        // Compare dates (user.created_at should be between startDate and endDate)
+        return userCreatedDate >= startDate && userCreatedDate <= endDate;
+      });
+    }
+
+    setFilteredUsers(filtered);
+  }, [locationFilter, roleFilter, startDateFilter, endDateFilter, users]);
 
   const handleAdd = (role = "User") => {
     setEditUser(null); // no initial data
     setNewRole(role); // preset role
     setShowUserModal(true);
     setShowAddMenu(false);
+  };
+
+  // Reset all filters
+  const handleResetFilters = () => {
+    setLocationFilter("");
+    setRoleFilter("");
+    setStartDateFilter("");
+    setEndDateFilter("");
   };
 
   return (
@@ -48,8 +97,8 @@ function Users() {
               id: String(users.length + 1).padStart(5, "0"),
               ...formData,
               role: newRole, // comes from Add menu
-              created: new Date().toISOString().split("T")[0],
-              modified: new Date().toISOString().split("T")[0],
+              created_at: new Date().toISOString().split("T")[0], // Store only the date part
+              modified: new Date().toISOString().split("T")[0], // Store only the date part
             };
             setUsers((prev) => [...prev, newUser]);
           }
@@ -62,55 +111,99 @@ function Users() {
       {/* Page Content */}
       <div className="p-6">
         {/* Page Title */}
-        <h1 className="text-2xl font-bold mb-6">Users</h1>
+        <h1 className="text-2xl font-bold mt-0 mb-3">Users</h1>
 
         {/* Filter bar */}
-        <div className="flex items-center justify-between bg-white rounded-lg shadow px-4 py-3 mb-6">
-          {/* Left side: Filter options */}
-          <div className="flex items-center divide-x divide-gray-200">
-            <div className="flex items-center gap-2 px-4">
+        <div className="flex items-center justify-between rounded-lg py-3 mb-2">
+          <div className="flex items-center gap-4 bg-white rounded-lg shadow px-4 py-3">
+            <div className="flex items-center gap-2">
               <Filter className="w-5 h-5 text-gray-600" />
               <span className="text-sm font-medium text-gray-700">
                 Filter By
               </span>
             </div>
 
-            <div className="px-4">
-              <select className="bg-transparent text-sm text-gray-700 focus:outline-none">
-                <option>Location</option>
-                <option>Mandaue City</option>
-                <option>Lapu-lapu City</option>
+            {/* Location Filter - Entire Area Clickable */}
+            <div
+              onClick={() => document.getElementById("locationFilter").focus()} // Focus the select element
+              className="px-2 cursor-pointer"
+            >
+              <select
+                id="locationFilter"
+                value={locationFilter}
+                onChange={(e) => setLocationFilter(e.target.value)}
+                className="bg-transparent text-sm text-gray-700 focus:outline-none"
+              >
+                <option value="">Location</option>
+                <option value="Mandaue City">Mandaue City</option>
+                <option value="Lapu-Lapu City">Lapu-lapu City</option>
               </select>
             </div>
 
-            <div className="px-4">
-              <select className="bg-transparent text-sm text-gray-700 focus:outline-none">
-                <option>Role</option>
-                <option>Admin</option>
-                <option>User</option>
+            {/* Role Filter */}
+            <div className="px-2">
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="bg-transparent text-sm text-gray-700 focus:outline-none"
+              >
+                <option value="">Role</option>
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
               </select>
             </div>
 
-            <div className="px-4">
+            {/* Start Date Filter with Text */}
+            <div className="px-2">
+              <label
+                htmlFor="startDate"
+                className="font-semibold text-sm  text-gray-700 mr-2"
+              >
+                Start Date
+              </label>
               <input
+                id="startDate"
                 type="date"
+                value={startDateFilter}
+                onChange={(e) => setStartDateFilter(e.target.value)}
                 className="bg-transparent text-sm text-gray-700 focus:outline-none"
               />
             </div>
 
-            <div className="px-4">
-              <button className="flex items-center gap-2 text-red-500 hover:text-red-600 text-sm font-medium">
+            {/* End Date Filter with Text */}
+            <div className="px-2">
+              <label
+                htmlFor="endDate"
+                className="font-semibold text-sm text-gray-700 mr-2"
+              >
+                End Date
+              </label>
+              <input
+                id="endDate"
+                type="date"
+                value={endDateFilter}
+                onChange={(e) => setEndDateFilter(e.target.value)}
+                className="bg-transparent text-sm text-gray-700 focus:outline-none"
+              />
+            </div>
+
+            {/* Reset Filter */}
+            <div className="px-2">
+              <button
+                onClick={handleResetFilters}
+                className="flex items-center gap-2 text-red-500 hover:text-red-600 text-sm font-medium"
+              >
                 <RotateCcw className="w-4 h-4" />
                 Reset Filter
               </button>
             </div>
           </div>
 
-          {/* Right side: Add User/Admin */}
-          <div className="relative">
+          {/* Right side: Plus button */}
+          <div className="ml-auto">
             <button
               onClick={() => setShowAddMenu((prev) => !prev)}
-              className="ml-4 flex items-center justify-center w-9 h-9 rounded-full bg-[#43A866] text-white hover:bg-green-700"
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-[#43A866] text-white hover:bg-green-700"
             >
               <Plus className="w-5 h-5" />
             </button>
@@ -151,7 +244,7 @@ function Users() {
               </tr>
             </thead>
             <tbody>
-              {users?.map((u) => (
+              {filteredUsers?.map((u) => (
                 <tr
                   key={u.uid}
                   className="border-b hover:bg-gray-50 transition-colors"
@@ -162,7 +255,7 @@ function Users() {
                   <td className="p-3">{u.email}</td>
                   <td className="p-3">{u.location}</td>
                   <td className="p-3">{u.role}</td>
-                  <td className="p-3">{u.created}</td>
+                  <td className="p-3">{u.created_at?.split("T")[0]}</td>
                   <td className="p-3">{u.modified}</td>
                   <td className="p-3 flex gap-2">
                     <button
@@ -182,19 +275,6 @@ function Users() {
               ))}
             </tbody>
           </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex justify-between items-center text-sm text-gray-600 mt-4">
-          <p>Showing 1-{users?.length} of 78</p>
-          <div className="flex gap-2">
-            <button className="px-3 py-1 border rounded hover:bg-gray-100">
-              &lt;
-            </button>
-            <button className="px-3 py-1 border rounded hover:bg-gray-100">
-              &gt;
-            </button>
-          </div>
         </div>
       </div>
     </>

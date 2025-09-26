@@ -56,25 +56,77 @@ function Dashboard() {
     fetchReviews();
   }, []);
 
+  // Feedback Type Breakdown
   const feedbackTypeData = [
-    { name: "Bug Reports", value: 50 },
-    { name: "Others", value: 30 },
+    { name: "Bug Report", value: 0 },
+    { name: "Suggestion", value: 0 },
+    { name: "Question", value: 0 },
   ];
 
+  feedback.forEach((item) => {
+    if (item.type === "Bug Report") feedbackTypeData[0].value++;
+    else if (item.type === "Suggestion") feedbackTypeData[1].value++;
+    else feedbackTypeData[2].value++;
+  });
+
+  // Device Status Overview
   const deviceStatusData = [
-    { name: "Active", value: 70 },
-    { name: "Inactive", value: 30 },
+    { name: "paired", value: 0 },
+    { name: "unpaired", value: 0 },
   ];
 
+  totalDevices.forEach((device) => {
+    if (device.status === "paired") deviceStatusData[0].value++;
+    else deviceStatusData[1].value++;
+  });
+
+  // Rating Distribution
   const ratingDistribution = [
-    { name: "1 Star", value: 1 },
-    { name: "2 Star", value: 2 },
-    { name: "3 Star", value: 3 },
-    { name: "4 Star", value: 4 },
-    { name: "5 Star", value: 5 },
+    { name: "1 Star", value: 0 },
+    { name: "2 Star", value: 0 },
+    { name: "3 Star", value: 0 },
+    { name: "4 Star", value: 0 },
+    { name: "5 Star", value: 0 },
   ];
+
+  reviews.forEach((review) => {
+    const rating = review.rating;
+    if (rating === 1) ratingDistribution[0].value++;
+    else if (rating === 2) ratingDistribution[1].value++;
+    else if (rating === 3) ratingDistribution[2].value++;
+    else if (rating === 4) ratingDistribution[3].value++;
+    else if (rating === 5) ratingDistribution[4].value++;
+  });
 
   const COLORS = ["#43A866", "#90D6B0"];
+
+  const recentReviews = reviews
+    .sort((a, b) => {
+      // Sort by date, if dates are equal, fallback to ID
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+
+      if (dateA !== dateB) {
+        return dateB - dateA; // Newest first
+      } else {
+        return b.id - a.id; // Fallback to ID for tie-breaking
+      }
+    })
+    .slice(0, 4); // Get the first 5 reviews
+
+  const recentFeedback = feedback
+    .sort((a, b) => {
+      // Sort by date, if dates are equal, fallback to ID
+      const dateA = new Date(a.date_created).getTime();
+      const dateB = new Date(b.date_created).getTime();
+
+      if (dateA !== dateB) {
+        return dateB - dateA; // Newest first
+      } else {
+        return b.id - a.id; // Fallback to ID for tie-breaking
+      }
+    })
+    .slice(0, 4); // Get the first 5 reviews
 
   return (
     <div className="p-6 space-y-4">
@@ -124,9 +176,9 @@ function Dashboard() {
         {/* LEFT: Reviews + Feedback */}
         <div className="md:col-span-2 flex flex-col gap-4">
           {/* Recent Reviews */}
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg shadow p-4 h-63 overflow-x-auto">
             <h3 className="font-semibold mb-3">Recent Reviews</h3>
-            <table className="w-full text-sm">
+            <table className="min-w-full text-sm">
               <thead>
                 <tr className="bg-green-200 text-left">
                   <th className="p-2">ID</th>
@@ -137,21 +189,23 @@ function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="p-2">1</td>
-                  <td className="p-2">5 ⭐</td>
-                  <td className="p-2">Great app!</td>
-                  <td className="p-2">user1@mail.com</td>
-                  <td className="p-2">2025-09-20</td>
-                </tr>
+                {recentReviews?.map((review) => (
+                  <tr key={review.id}>
+                    <td className="p-2">{review.id}</td>
+                    <td className="p-2">{review.rating} ⭐</td>
+                    <td className="p-2">{review.message}</td>
+                    <td className="p-2">{review.email}</td>
+                    <td className="p-2">{review.created_at}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
 
           {/* Recent Feedback */}
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg shadow p-4 h-64 overflow-x-auto">
             <h3 className="font-semibold mb-3">Recent Feedback</h3>
-            <table className="w-full text-sm">
+            <table className="min-w-full text-sm">
               <thead>
                 <tr className="bg-green-200 text-left">
                   <th className="p-2">ID</th>
@@ -163,36 +217,34 @@ function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="p-2">1</td>
-                  <td className="p-2">Bug</td>
-                  <td className="p-2">App crashed</td>
-                  <td className="p-2">user2@mail.com</td>
-                  <td className="p-2">2025-09-19</td>
-                  <td className="p-2">Open</td>
-                </tr>
+                {recentFeedback?.map((item) => (
+                  <tr key={item.id}>
+                    <td className="p-2">{item.id}</td>
+                    <td className="p-2">{item.type}</td>
+                    <td className="p-2">{item.message}</td>
+                    <td className="p-2">{item.email}</td>
+                    <td className="p-2">{item.date_created}</td>
+                    <td className="p-2">{item.status}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </div>
 
         {/* RIGHT: Charts in one card */}
-        <div className="bg-white rounded-lg shadow p-4 flex flex-col gap-4">
+        <div className="bg-white rounded-lg shadow p-4 flex flex-col gap-3 h-131">
           {/* Feedback Type Breakdown */}
           <div>
             <h3 className="font-semibold mb-2">Feedback Type Breakdown</h3>
-            <ResponsiveContainer width="100%" height={118}>
+            <ResponsiveContainer width="100%" height={110}>
               <PieChart>
-                <Pie
-                  data={feedbackTypeData}
-                  dataKey="value"
-                  outerRadius={55}
-                  label
-                >
+                <Pie data={feedbackTypeData} dataKey="value" outerRadius={55}>
                   {feedbackTypeData.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
+                <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -200,18 +252,14 @@ function Dashboard() {
           {/* Device Status Overview */}
           <div>
             <h3 className="font-semibold mb-2">Device Status Overview</h3>
-            <ResponsiveContainer width="100%" height={118}>
+            <ResponsiveContainer width="100%" height={110}>
               <PieChart>
-                <Pie
-                  data={deviceStatusData}
-                  dataKey="value"
-                  outerRadius={55}
-                  label
-                >
+                <Pie data={deviceStatusData} dataKey="value" outerRadius={55}>
                   {deviceStatusData.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
+                <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -219,7 +267,7 @@ function Dashboard() {
           {/* Rating Distribution */}
           <div>
             <h3 className="font-semibold mb-2">Rating Distribution</h3>
-            <ResponsiveContainer width="100%" height={118}>
+            <ResponsiveContainer width="100%" height={110}>
               <BarChart data={ratingDistribution}>
                 <XAxis dataKey="name" />
                 <YAxis />

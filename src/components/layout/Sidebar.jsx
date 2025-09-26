@@ -63,7 +63,7 @@ function Sidebar({ collapsed, onCollapse, activePath }) {
             ? "bg-[#43A866] text-white"
             : "text-gray-700 hover:bg-gray-100"
         }
-        ${item.highlight && !activePath === item.path ? "mt-2" : ""}
+        ${item.highlight && activePath !== item.path ? "mt-2" : ""}
         ${collapsed ? "justify-center" : ""}
       `}
           >

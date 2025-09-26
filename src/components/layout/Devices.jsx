@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Filter, RotateCcw } from "lucide-react";
-import { fetchAllDevices, fetchDeviceById } from "../../../services/apiService";
+import { fetchAllDevices } from "../../../services/apiService";
 
 function Devices() {
   const [devices, setDevices] = useState([]);
+  const [filteredDevices, setFilteredDevices] = useState([]);
+  const [startDateFilter, setStartDateFilter] = useState(""); // Start date filter
+  const [endDateFilter, setEndDateFilter] = useState(""); // End date filter
+  const [statusFilter, setStatusFilter] = useState(""); // Status filter
 
   useEffect(() => {
     const fetchDevicesData = async () => {
       try {
         const response = await fetchAllDevices();
         setDevices(response);
+        setFilteredDevices(response); // Initialize filteredDevices with all devices
       } catch (error) {
         console.error("Error fetching devices:", error);
       }
@@ -17,6 +22,40 @@ function Devices() {
 
     fetchDevicesData();
   }, []);
+
+  useEffect(() => {
+    let filtered = devices;
+
+    // Filter by status
+    if (statusFilter) {
+      filtered = filtered.filter((device) => device.status === statusFilter);
+    }
+
+    // Filter by start date and end date range
+    if (startDateFilter && endDateFilter) {
+      filtered = filtered.filter((device) => {
+        const deviceRegisteredDate = new Date(
+          device.register_at?.split("T")[0]
+        );
+        const startDate = new Date(startDateFilter);
+        const endDate = new Date(endDateFilter);
+
+        // Compare dates (device.register_at should be between startDate and endDate)
+        return (
+          deviceRegisteredDate >= startDate && deviceRegisteredDate <= endDate
+        );
+      });
+    }
+
+    setFilteredDevices(filtered);
+  }, [statusFilter, startDateFilter, endDateFilter, devices]);
+
+  // Reset all filters
+  const handleResetFilters = () => {
+    setStatusFilter("");
+    setStartDateFilter("");
+    setEndDateFilter("");
+  };
 
   return (
     <div className="p-6">
@@ -31,30 +70,56 @@ function Devices() {
           </div>
 
           <div className="px-4">
-            <select className="bg-transparent text-sm text-gray-700 focus:outline-none">
-              <option>Location</option>
-              <option>Mandaue City</option>
-              <option>Lapu-lapu City</option>
+            <select
+              className="bg-transparent text-sm text-gray-700 focus:outline-none"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">Status</option>
+              <option value="paired">Paired</option>
+              <option value="unpaired">Unpaired</option>
             </select>
           </div>
 
-          <div className="px-4">
-            <select className="bg-transparent text-sm text-gray-700 focus:outline-none">
-              <option>Status</option>
-              <option>Active</option>
-              <option>Inactive</option>
-            </select>
-          </div>
-
-          <div className="px-4">
+          {/* Start Date Filter with Text */}
+          <div className="px-2">
+            <label
+              htmlFor="startDate"
+              className="font-semibold text-sm text-gray-700 mr-2"
+            >
+              Start Date
+            </label>
             <input
+              id="startDate"
               type="date"
+              value={startDateFilter}
+              onChange={(e) => setStartDateFilter(e.target.value)}
+              className="bg-transparent text-sm text-gray-700 focus:outline-none"
+            />
+          </div>
+
+          {/* End Date Filter with Text */}
+          <div className="px-2">
+            <label
+              htmlFor="endDate"
+              className="font-semibold text-sm text-gray-700 mr-2"
+            >
+              End Date
+            </label>
+            <input
+              id="endDate"
+              type="date"
+              value={endDateFilter}
+              onChange={(e) => setEndDateFilter(e.target.value)}
               className="bg-transparent text-sm text-gray-700 focus:outline-none"
             />
           </div>
 
           <div className="px-4">
-            <button className="flex items-center gap-2 text-red-500 hover:text-red-600 text-sm font-medium">
+            <button
+              onClick={handleResetFilters}
+              className="flex items-center gap-2 text-red-500 hover:text-red-600 text-sm font-medium"
+            >
               <RotateCcw className="w-4 h-4" />
               Reset Filter
             </button>
@@ -77,7 +142,7 @@ function Devices() {
             </tr>
           </thead>
           <tbody>
-            {devices?.map((d, index) => (
+            {filteredDevices.map((d, index) => (
               <tr
                 key={d.device_id || index}
                 className="border-b hover:bg-gray-50 transition-colors"
@@ -86,8 +151,8 @@ function Devices() {
                 <td className="p-3">{d.device_nickname}</td>
                 <td className="p-3">{d.owner}</td>
                 <td className="p-3">{d.pairing_code}</td>
-                <td className="p-3">{d.paired_at}</td>
-                <td className="p-3">{d.register_at}</td>
+                <td className="p-3">{d.paired_at?.split("T")[0]}</td>
+                <td className="p-3">{d.register_at?.split("T")[0]}</td>
                 <td className="p-3">{d.status}</td>
               </tr>
             ))}
@@ -97,7 +162,9 @@ function Devices() {
 
       {/* Pagination */}
       <div className="flex justify-between items-center text-sm text-gray-600 mt-4">
-        <p>Showing 1-{devices.length} of 78</p>
+        <p>
+          Showing 1-{filteredDevices.length} of {filteredDevices.length}
+        </p>
         <div className="flex gap-2">
           <button className="px-3 py-1 border rounded hover:bg-gray-100">
             &lt;
