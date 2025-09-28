@@ -99,7 +99,7 @@ function Login() {
               Remember Password
             </label> */}
           </div>
-          <a href="#" className="text-[14px] text-gray-500 hover:underline">
+          <a href="/forgot-password" className="text-[14px] text-gray-500 hover:underline">
             Forgot Password?
           </a>
         </div>
@@ -111,14 +111,6 @@ function Login() {
         >
           Sign In
         </button>
-
-        {/* Create account */}
-        <div className="mt-4 text-center text-sm">
-          Don’t have an account?{" "}
-          <a href="#" className="text-[#215C38] font-medium hover:underline">
-            Create Account
-          </a>
-        </div>
       </form>
     </div>
   );
