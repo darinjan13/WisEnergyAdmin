@@ -98,6 +98,7 @@ function Dashboard() {
     else if (rating === 5) ratingDistribution[4].value++;
   });
 
+  const FEEDBACK_COLORS = ["#24924B", "#43A866", "#90D6B0"];
   const COLORS = ["#43A866", "#90D6B0"];
 
   const recentReviews = reviews
@@ -141,10 +142,10 @@ function Dashboard() {
           <Users className="w-10 h-10 opacity-80" />
         </div>
 
-        {/* Active Devices */}
+        {/* Total Devices */}
         <div className="bg-[#4a8761] text-white rounded-lg p-6 shadow flex justify-between items-center">
           <div>
-            <h3 className="text-lg">Active Devices</h3>
+            <h3 className="text-lg">Total Devices</h3>
             <p className="text-3xl font-bold">{totalDevices?.length}</p>
           </div>
           <Plug className="w-10 h-10 opacity-80" />
@@ -241,7 +242,10 @@ function Dashboard() {
               <PieChart>
                 <Pie data={feedbackTypeData} dataKey="value" outerRadius={55}>
                   {feedbackTypeData.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    <Cell
+                      key={i}
+                      fill={FEEDBACK_COLORS[i % FEEDBACK_COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />

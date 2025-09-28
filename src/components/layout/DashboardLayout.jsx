@@ -6,6 +6,8 @@ import Users from "./Users";
 import Devices from "./Devices";
 import Reviews from "./Reviews";
 import Feedback from "./Feedback";
+import Exports from "./Exports";
+import Rates from "./Rates";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 
 function DashboardLayout() {
@@ -47,6 +49,12 @@ function DashboardLayout() {
 
           {/* Feedback */}
           <Route path="feedback" element={<Feedback />} />
+
+          {/* Electricity Rates */}
+          <Route path="rates" element={<Rates />} />
+
+          {/* Export Reports */}
+          <Route path="exports" element={<Exports />} />
 
           {/* Redirect root to dashboard */}
           <Route path="/" element={<Navigate to="dashboard" replace />} />

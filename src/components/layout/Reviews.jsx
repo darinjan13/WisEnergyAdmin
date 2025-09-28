@@ -1,46 +1,64 @@
 import React, { useEffect, useState } from "react";
 import { Filter, RotateCcw } from "lucide-react";
 import { fetchAllReviews } from "../../../services/apiService";
-
+import { useSearch } from "../SearchContext";
 function Reviews() {
+  const { searchQuery } = useSearch();
   const [reviews, setReviews] = useState([]);
   const [filteredReviews, setFilteredReviews] = useState([]);
   const [ratingFilter, setRatingFilter] = useState(""); // Filter for rating
   const [dateFilter, setDateFilter] = useState(""); // Filter for date
-
+  const renderStars = (count) => {
+    const filled = "★".repeat(count);
+    const empty = "☆".repeat(5 - count);
+    return filled + empty;
+  };
   useEffect(() => {
-    const fetchAllReview = async () => {
-      const response = await fetchAllReviews();
-      setReviews(response);
-      setFilteredReviews(response); // Initialize filteredReviews with all reviews
+    const loadReviews = async () => {
+      try {
+        const response = await fetchAllReviews();
+        setReviews(response);
+        setFilteredReviews(response);
+      } catch (err) {
+        console.error("Error fetching reviews:", err);
+      }
     };
-    fetchAllReview();
+    loadReviews();
   }, []);
-
-  // Helper to render stars
-  const renderStars = (count) => "★".repeat(count) + "☆".repeat(5 - count);
 
   useEffect(() => {
     let filtered = reviews;
 
-    // Filter by rating
+    // Rating filter
     if (ratingFilter) {
-      const ratingValue = parseInt(ratingFilter[0], 10); // Extract the rating value from the filter
-      filtered = filtered.filter((review) => review.rating === ratingValue);
+      const ratingValue = parseInt(ratingFilter[0], 10);
+      filtered = filtered.filter((r) => r.rating === ratingValue);
     }
 
-    // Filter by date
+    // Date filter
     if (dateFilter) {
-      const filteredByDate = filtered.filter((review) => {
-        const reviewDate = new Date(review.created_at); // Assuming created_at is in ISO format
-        const filterDate = new Date(dateFilter);
-        return reviewDate.toDateString() === filterDate.toDateString(); // Only matches the selected date
+      const filterDate = new Date(dateFilter);
+      filtered = filtered.filter((r) => {
+        const date = new Date(r.created_at);
+        return date.toDateString() === filterDate.toDateString();
       });
-      filtered = filteredByDate;
+    }
+
+    // 🔍 Global search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (r) =>
+          r.id.toLowerCase().includes(q) ||
+          r.message?.toLowerCase().includes(q) ||
+          r.email?.toLowerCase().includes(q) ||
+          String(r.rating).includes(q) ||
+          r.created_at?.toLowerCase().includes(q)
+      );
     }
 
     setFilteredReviews(filtered);
-  }, [ratingFilter, dateFilter, reviews]);
+  }, [reviews, ratingFilter, dateFilter, searchQuery]);
 
   // Reset all filters
   const handleResetFilters = () => {
@@ -81,11 +99,11 @@ function Reviews() {
           {/* Date Filter */}
           <div className="px-4">
             <label
-                htmlFor="dateCreated"
-                className="font-semibold text-sm  text-gray-700 mr-2"
-              >
-                Date Created
-              </label>
+              htmlFor="dateCreated"
+              className="font-semibold text-sm  text-gray-700 mr-2"
+            >
+              Date Created
+            </label>
             <input
               type="date"
               className="bg-transparent text-sm text-gray-700 focus:outline-none"
@@ -138,7 +156,9 @@ function Reviews() {
 
       {/* Pagination */}
       <div className="flex justify-between items-center text-sm text-gray-600 mt-4">
-        <p>Showing 1-{filteredReviews?.length} of {filteredReviews?.length}</p>
+        <p>
+          Showing 1-{filteredReviews?.length} of {filteredReviews?.length}
+        </p>
         <div className="flex gap-2">
           <button className="px-3 py-1 border rounded hover:bg-gray-100">
             &lt;

@@ -1,22 +1,23 @@
-import { Home, Users, Plug, Star, MessageSquare, LogOut } from "lucide-react";
-import React from "react";
+import {
+  Home,
+  Users,
+  Plug,
+  Star,
+  MessageSquare,
+  LogOut,
+  FileText, Zap,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import React from "react";
 
 const navItems = [
-  {
-    label: "Dashboard",
-    icon: <Home className="w-5 h-5" />,
-    path: "/dashboard",
-  },
+  { label: "Dashboard", icon: <Home className="w-5 h-5" />, path: "/dashboard", },
   { label: "Users", icon: <Users className="w-5 h-5" />, path: "/users" },
   { label: "Devices", icon: <Plug className="w-5 h-5" />, path: "/devices" },
   { label: "Reviews", icon: <Star className="w-5 h-5" />, path: "/reviews" },
-  {
-    label: "Feedback",
-    icon: <MessageSquare className="w-5 h-5" />,
-    path: "/feedback",
-    highlight: true,
-  },
+  { label: "Feedback", icon: <MessageSquare className="w-5 h-5" />, path: "/feedback", highlight: true},
+  { label: "Electricity Rates", icon: <Zap className="w-5 h-5" />, path: "/rates" }, // ✅ New
+  { label: "Export Reports", icon: <FileText className="w-5 h-5" />, path: "/exports", highlight: true,},
 ];
 
 function Sidebar({ collapsed, onCollapse, activePath }) {
@@ -64,8 +65,7 @@ function Sidebar({ collapsed, onCollapse, activePath }) {
             : "text-gray-700 hover:bg-gray-100"
         }
         ${item.highlight && activePath !== item.path ? "mt-2" : ""}
-        ${collapsed ? "justify-center" : ""}
-      `}
+        ${collapsed ? "justify-center" : ""}`}
           >
             {/* Make icon bigger when collapsed */}
             {React.cloneElement(item.icon, {
@@ -77,7 +77,7 @@ function Sidebar({ collapsed, onCollapse, activePath }) {
       </nav>
 
       {/* Log Out */}
-      <div className="p-4 border-t-2 border-t-gray-300  mt-auto">
+      <div className="p-4 border-t-2 border-t-gray-300 mt-auto">
         <button
           className={`flex items-center gap-2 text-[#F44336] font-medium text-sm hover:underline ${
             collapsed ? "justify-center w-full" : ""

@@ -2,12 +2,17 @@ import React, { useEffect, useState } from "react";
 import { Filter, RotateCcw, Plus, Edit2, Trash2 } from "lucide-react";
 import UserModal from "./UserModal";
 import { fetchAllUsers } from "../../../services/apiService";
+import { useSearch } from "../SearchContext";
+import ConfirmModal from "./ConfirmModal";
 
 function Users() {
+  const { searchQuery } = useSearch();
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
   const [newRole, setNewRole] = useState("User"); // default for Add
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   // User data and filtered users
   const [users, setUsers] = useState([]);
@@ -37,30 +42,46 @@ function Users() {
   useEffect(() => {
     let filtered = users;
 
-    // Filter by location
+    // Existing filters (location, role, dates)...
     if (locationFilter) {
-      filtered = filtered.filter((user) => user.location === locationFilter);
+      filtered = filtered.filter((u) => u.location === locationFilter);
     }
-
-    // Filter by role
     if (roleFilter) {
-      filtered = filtered.filter((user) => user.role === roleFilter);
+      filtered = filtered.filter((u) => u.role === roleFilter);
     }
-
-    // Filter by start date and end date range
     if (startDateFilter && endDateFilter) {
-      filtered = filtered.filter((user) => {
-        const userCreatedDate = new Date(user.created_at?.split("T")[0]); // Convert user.created_at to Date object
-        const startDate = new Date(startDateFilter); // Convert startDate to Date object
-        const endDate = new Date(endDateFilter); // Convert endDate to Date object
-
-        // Compare dates (user.created_at should be between startDate and endDate)
-        return userCreatedDate >= startDate && userCreatedDate <= endDate;
+      const start = new Date(startDateFilter);
+      const end = new Date(endDateFilter);
+      filtered = filtered.filter((u) => {
+        const date = new Date(u.created_at?.split("T")[0]);
+        return date >= start && date <= end;
       });
     }
 
+    // 🔍 Global search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (u) =>
+          u.uid?.toLowerCase().includes(q) ||
+          u.first_name?.toLowerCase().includes(q) ||
+          u.last_name?.toLowerCase().includes(q) ||
+          u.email?.toLowerCase().includes(q) ||
+          u.location?.toLowerCase().includes(q) ||
+          u.role?.toLowerCase().includes(q) ||
+          u.created_at?.toLowerCase().includes(q)
+      );
+    }
+
     setFilteredUsers(filtered);
-  }, [locationFilter, roleFilter, startDateFilter, endDateFilter, users]);
+  }, [
+    users,
+    locationFilter,
+    roleFilter,
+    startDateFilter,
+    endDateFilter,
+    searchQuery,
+  ]);
 
   const handleAdd = (role = "User") => {
     setEditUser(null); // no initial data
@@ -85,27 +106,31 @@ function Users() {
         onClose={() => setShowUserModal(false)}
         onSubmit={(formData) => {
           if (editUser) {
-            // Update existing user
             setUsers((prev) =>
               prev.map((u) =>
-                u.id === editUser.id ? { ...u, ...formData } : u
+                u.uid === editUser.uid
+                  ? {
+                      ...u,
+                      ...formData,
+                      modified: new Date().toISOString().split("T")[0],
+                    }
+                  : u
               )
             );
           } else {
-            // Add new user/admin
             const newUser = {
-              id: String(users.length + 1).padStart(5, "0"),
+              uid: String(users.length + 1).padStart(5, "0"),
               ...formData,
-              role: newRole, // comes from Add menu
-              created_at: new Date().toISOString().split("T")[0], // Store only the date part
-              modified: new Date().toISOString().split("T")[0], // Store only the date part
+              role: newRole.toLowerCase(), // ensure role is lowercase
+              created_at: new Date().toISOString().split("T")[0],
             };
-            setUsers((prev) => [...prev, newUser]);
+            setUsers((prev) => [newUser, ...prev]);
           }
           setShowUserModal(false);
         }}
-        initialData={editUser}
+        initialData={editUser || {}}
         mode={editUser ? "edit" : "create"}
+        role={newRole} // ✅ this tells modal which form to show
       />
 
       {/* Page Content */}
@@ -267,7 +292,13 @@ function Users() {
                     >
                       <Edit2 className="w-4 h-4" /> Edit
                     </button>
-                    <button className="flex items-center gap-1 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">
+                    <button
+                      onClick={() => {
+                        setDeleteTarget(u); // store user being deleted
+                        setShowConfirmModal(true); // open modal
+                      }}
+                      className="flex items-center gap-1 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                    >
                       <Trash2 className="w-4 h-4" /> Delete
                     </button>
                   </td>
@@ -275,6 +306,21 @@ function Users() {
               ))}
             </tbody>
           </table>
+          <ConfirmModal
+            isOpen={showConfirmModal}
+            onClose={() => {
+              setDeleteTarget(null);
+              setShowConfirmModal(false);
+            }}
+            onConfirm={() => {
+              setUsers((prev) =>
+                prev.filter((x) => x.uid !== deleteTarget.uid)
+              );
+              setDeleteTarget(null);
+              setShowConfirmModal(false);
+            }}
+            message={`Are you sure you want to delete ${deleteTarget?.first_name} ${deleteTarget?.last_name}?`}
+          />
         </div>
       </div>
     </>

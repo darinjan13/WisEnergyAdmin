@@ -6,65 +6,87 @@ function UserModal({
   onSubmit,
   initialData = {},
   mode = "create",
+  role = "User", // passed from Users.jsx when adding
 }) {
   if (!isOpen) return null;
 
+  // Normalize role: prefer initialData.role when editing, otherwise use role prop
+  const effectiveRole =
+    mode === "edit"
+      ? (initialData.role || "User").toLowerCase()
+      : role.toLowerCase();
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-md rounded-lg shadow-lg p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Blurred background */}
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      ></div>
+
+      {/* Modal content */}
+      <div className="relative bg-white w-full max-w-md rounded-lg shadow-lg p-6 z-10">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-gray-100 flex items-center justify-center rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6 text-gray-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5.121 17.804A13.937 13.937 0 0112 15c2.21 0 4.29.534 6.121 1.474M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-lg font-semibold">
-            {mode === "edit" ? "Edit User" : "Create New User"}
-          </h2>
-        </div>
+        <h2 className="text-lg font-semibold mb-4">
+          {mode === "edit"
+            ? `Edit ${effectiveRole === "admin" ? "Admin" : "User"}`
+            : `Create New ${effectiveRole === "admin" ? "Admin" : "User"}`}
+        </h2>
 
         {/* Form */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            const formData = {
-              firstName: e.target.firstName.value,
-              lastName: e.target.lastName.value,
-              email: e.target.email.value,
-              location: e.target.location.value,
-            };
+            let formData = {};
+
+            if (effectiveRole === "admin") {
+              const password = e.target.password?.value;
+              const confirmPassword = e.target.confirmPassword?.value;
+
+              if (mode === "create" && password !== confirmPassword) {
+                alert("Passwords do not match!");
+                return;
+              }
+
+              formData = {
+                first_name: e.target.firstName.value,
+                last_name: e.target.lastName.value,
+                email: e.target.email.value,
+                role: "admin",
+                ...(password ? { password } : {}), // only include password if provided
+              };
+            } else {
+              formData = {
+                first_name: e.target.firstName.value,
+                last_name: e.target.lastName.value,
+                email: e.target.email.value,
+                location: e.target.location.value,
+                role: "user",
+              };
+            }
+
             onSubmit(formData);
           }}
           className="space-y-4"
         >
+          {/* Shared Fields */}
           <div className="flex gap-3">
             <input
               type="text"
               name="firstName"
-              defaultValue={initialData.firstName || ""}
+              defaultValue={initialData.first_name || ""}
               placeholder="First Name"
               className="w-1/2 border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
             <input
               type="text"
               name="lastName"
-              defaultValue={initialData.lastName || ""}
+              defaultValue={initialData.last_name || ""}
               placeholder="Last Name"
               className="w-1/2 border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
+
           <input
             type="email"
             name="email"
@@ -72,15 +94,46 @@ function UserModal({
             placeholder="Email Address"
             className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
-          <select
-            name="location"
-            defaultValue={initialData.location || ""}
-            className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            <option value="">Select Location</option>
-            <option value="Mandaue City">Mandaue City</option>
-            <option value="Lapu-lapu City">Lapu-lapu City</option>
-          </select>
+
+          {/* Fields for Admin */}
+          {effectiveRole === "admin" && (
+            <>
+              {mode === "create" && (
+                <>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="Confirm Password"
+                    className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </>
+              )}
+              {mode === "edit" && (
+                <p className="text-xs text-gray-500">
+                  Leave password fields empty if you don’t want to change it.
+                </p>
+              )}
+            </>
+          )}
+
+          {/* Location only for Users */}
+          {effectiveRole === "user" && (
+            <select
+              name="location"
+              defaultValue={initialData.location || ""}
+              className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">Select Location</option>
+              <option value="Mandaue City">Mandaue City</option>
+              <option value="Lapu-Lapu City">Lapu-Lapu City</option>
+            </select>
+          )}
 
           {/* Footer */}
           <div className="flex justify-end gap-3 pt-2">

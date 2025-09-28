@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Filter, RotateCcw } from "lucide-react";
 import { fetchAllDevices } from "../../../services/apiService";
+import { useSearch } from "../SearchContext"; // adjust path if deeper
 
 function Devices() {
+  const { searchQuery } = useSearch();
   const [devices, setDevices] = useState([]);
   const [filteredDevices, setFilteredDevices] = useState([]);
   const [startDateFilter, setStartDateFilter] = useState(""); // Start date filter
@@ -26,29 +28,36 @@ function Devices() {
   useEffect(() => {
     let filtered = devices;
 
-    // Filter by status
+    // Status filter
     if (statusFilter) {
-      filtered = filtered.filter((device) => device.status === statusFilter);
+      filtered = filtered.filter((d) => d.status === statusFilter);
     }
 
-    // Filter by start date and end date range
+    // Date filter
     if (startDateFilter && endDateFilter) {
-      filtered = filtered.filter((device) => {
-        const deviceRegisteredDate = new Date(
-          device.register_at?.split("T")[0]
-        );
-        const startDate = new Date(startDateFilter);
-        const endDate = new Date(endDateFilter);
-
-        // Compare dates (device.register_at should be between startDate and endDate)
-        return (
-          deviceRegisteredDate >= startDate && deviceRegisteredDate <= endDate
-        );
+      const start = new Date(startDateFilter);
+      const end = new Date(endDateFilter);
+      filtered = filtered.filter((d) => {
+        const date = new Date(d.register_at?.split("T")[0]);
+        return date >= start && date <= end;
       });
     }
 
+    // 🔍 Global search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (d) =>
+          d.id.toLowerCase().includes(q) ||
+          d.device_nickname?.toLowerCase().includes(q) ||
+          d.owner?.toLowerCase().includes(q) ||
+          d.pairing_code?.toLowerCase().includes(q) ||
+          d.status?.toLowerCase().includes(q)
+      );
+    }
+
     setFilteredDevices(filtered);
-  }, [statusFilter, startDateFilter, endDateFilter, devices]);
+  }, [devices, statusFilter, startDateFilter, endDateFilter, searchQuery]);
 
   // Reset all filters
   const handleResetFilters = () => {

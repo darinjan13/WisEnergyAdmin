@@ -1,6 +1,9 @@
 import React from "react";
+import { useSearch } from "../SearchContext";
 
 function Header({ onMenuClick }) {
+  const { searchQuery, setSearchQuery } = useSearch();
+
   return (
     <header className="flex items-center bg-white px-8 py-4 w-full">
       {/* Hamburger menu icon */}
@@ -14,7 +17,7 @@ function Header({ onMenuClick }) {
           <rect x="5" y="18" width="18" height="2" rx="1" fill="#4B5563" />
         </svg>
       </button>
-      {/* Search bar */}
+      {/* 🔍 Search bar */}
       <div className="relative w-full max-w-xl">
         <svg
           className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5"
@@ -28,6 +31,8 @@ function Header({ onMenuClick }) {
         <input
           type="text"
           placeholder="Search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-4 py-2 rounded-full bg-gray-50 border border-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#43A866]/30"
         />
       </div>

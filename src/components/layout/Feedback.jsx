@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Filter, RotateCcw } from "lucide-react";
 import { fetchAllFeedbacks } from "../../../services/apiService";
+import { useSearch } from "../SearchContext";
 
 function Feedback() {
+  const { searchQuery } = useSearch();
   const [feedback, setFeedback] = useState([]);
   const [filteredFeedback, setFilteredFeedback] = useState([]);
-  const [typeFilter, setTypeFilter] = useState(""); // Type filter
-  const [statusFilter, setStatusFilter] = useState(""); // Status filter
-  const [dateFilter, setDateFilter] = useState(""); // Date filter
+  const [typeFilter, setTypeFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [dateCreatedFilter, setDateCreatedFilter] = useState("");
+  const [dateModifiedFilter, setDateModifiedFilter] = useState("");
 
   const statusColors = {
     Open: "bg-blue-100 text-blue-600",
@@ -17,50 +21,96 @@ function Feedback() {
   };
 
   useEffect(() => {
-    const fetchAllFeedback = async () => {
-      const response = await fetchAllFeedbacks();
-      setFeedback(response);
-      setFilteredFeedback(response); // Initialize filteredFeedback with all feedback
+    const loadFeedback = async () => {
+      try {
+        const response = await fetchAllFeedbacks();
+        // Ensure all items have a date_modified field
+        const withModified = response.map((f) => ({
+          ...f,
+          date_modified: f.date_modified || "",
+        }));
+        setFeedback(withModified);
+        setFilteredFeedback(withModified);
+      } catch (error) {
+        console.error("Error fetching feedback:", error);
+      }
     };
-    fetchAllFeedback();
+
+    loadFeedback();
   }, []);
 
   useEffect(() => {
     let filtered = feedback;
 
-    // Filter by type
     if (typeFilter) {
       filtered = filtered.filter((f) => f.type === typeFilter);
     }
 
-    // Filter by status
     if (statusFilter) {
       filtered = filtered.filter((f) => f.status === statusFilter);
     }
 
-    // Filter by date
-    if (dateFilter) {
-      const filterDate = new Date(dateFilter);
+    if (dateCreatedFilter) {
+      const filterDate = new Date(dateCreatedFilter);
       filtered = filtered.filter((f) => {
-        const feedbackDate = new Date(f.date_created);
-        return feedbackDate.toDateString() === filterDate.toDateString(); // Only matches the selected date
+        const date = new Date(f.date_created);
+        return date.toDateString() === filterDate.toDateString();
       });
     }
 
+    // Date Modified filter
+    if (dateModifiedFilter) {
+      const filterDate = new Date(dateModifiedFilter);
+      filtered = filtered.filter((f) => {
+        if (!f.date_modified) return false; // skip if not modified yet
+        const date = new Date(f.date_modified);
+        return date.toDateString() === filterDate.toDateString();
+      });
+    }
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (f) =>
+          f.id.toLowerCase().includes(q) ||
+          f.type?.toLowerCase().includes(q) ||
+          f.message?.toLowerCase().includes(q) ||
+          f.email?.toLowerCase().includes(q) ||
+          f.status?.toLowerCase().includes(q) ||
+          f.date_created?.toLowerCase().includes(q) ||
+          f.date_modified?.toLowerCase().includes(q)
+      );
+    }
+
     setFilteredFeedback(filtered);
-  }, [typeFilter, statusFilter, dateFilter, feedback]);
+  }, [feedback, typeFilter, statusFilter, dateFilter, searchQuery]);
 
   // Reset all filters
   const handleResetFilters = () => {
     setTypeFilter("");
     setStatusFilter("");
-    setDateFilter("");
-    setFilteredFeedback(feedback); // Reset to all feedback
+    setDateCreatedFilter("");
+    setDateModifiedFilter("");
+    setFilteredFeedback(feedback);
+  };
+
+  // Handle status change
+  const handleStatusChange = (id, newStatus) => {
+    setFeedback((prev) =>
+      prev.map((f) =>
+        f.id === id
+          ? {
+              ...f,
+              status: newStatus,
+              date_modified: new Date().toISOString().split("T")[0],
+            }
+          : f
+      )
+    );
   };
 
   return (
     <div className="p-6">
-      {/* Page Title */}
       <h1 className="text-2xl font-bold mb-6">Feedback</h1>
 
       {/* Filter bar */}
@@ -115,6 +165,22 @@ function Feedback() {
               onChange={(e) => setDateFilter(e.target.value)}
             />
           </div>
+          {/* Date Modified Filter */}
+          <div className="px-4">
+            <label
+              htmlFor="dateModified"
+              className="font-semibold text-sm text-gray-700 mr-2"
+            >
+              Date Modified
+            </label>
+            <input
+              type="date"
+              id="dateModified"
+              className="bg-transparent text-sm text-gray-700 focus:outline-none"
+              value={dateModifiedFilter}
+              onChange={(e) => setDateModifiedFilter(e.target.value)}
+            />
+          </div>
 
           {/* Reset Filter */}
           <div className="px-4">
@@ -139,6 +205,7 @@ function Feedback() {
               <th className="p-3">Message</th>
               <th className="p-3">Email</th>
               <th className="p-3">Date Created</th>
+              <th className="p-3">Date Modified</th>
               <th className="p-3">Status</th>
             </tr>
           </thead>
@@ -154,13 +221,21 @@ function Feedback() {
                 <td className="p-3">{f.email}</td>
                 <td className="p-3">{f.date_created}</td>
                 <td className="p-3">
-                  <span
+                  {f.date_modified ? f.date_modified : "-"}
+                </td>
+                <td className="p-3">
+                  <select
+                    value={f.status}
+                    onChange={(e) => handleStatusChange(f.id, e.target.value)}
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
                       statusColors[f.status]
                     }`}
                   >
-                    {f.status}
-                  </span>
+                    <option value="Open">Open</option>
+                    <option value="Resolved">Resolved</option>
+                    <option value="Reviewed">Reviewed</option>
+                    <option value="In Progress">In Progress</option>
+                  </select>
                 </td>
               </tr>
             ))}
