@@ -8,7 +8,7 @@ function ForgotPassword() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Password reset for:", email);
-    // call API here
+   
   };
 
   return (
