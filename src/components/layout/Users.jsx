@@ -42,6 +42,7 @@ function Users() {
   useEffect(() => {
     const fetchUsers = async () => {
       const result = await fetchAllUsers();
+      console.log(result);
 
       setUsers(result);
       setFilteredUsers(result); // Initialize filtered users with all users
@@ -288,7 +289,6 @@ function Users() {
                 <th className="p-3">Role</th>
                 <th className="p-3">Date Created</th>
                 <th className="p-3">Date Modified</th>
-                <th className="p-3">Verified</th>
                 <th className="p-3">Action</th>
               </tr>
             </thead>
@@ -305,8 +305,7 @@ function Users() {
                   <td className="p-3">{u.location}</td>
                   <td className="p-3">{u.role}</td>
                   <td className="p-3">{u.created_at?.split("T")[0]}</td>
-                  <td className="p-3">{u.date_modified}</td>
-                  <td className="p-3">{u.verified || "false"}</td>
+                  <td className="p-3">{u.updated_at}</td>
                   <td className="p-3 flex gap-2">
                     <button
                       onClick={() => {
