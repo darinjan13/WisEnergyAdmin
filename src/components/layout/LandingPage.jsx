@@ -119,7 +119,7 @@ export default function LandingPage() {
             </button>
             <button className="flex items-center gap-2 border border-[#24924B] text-[#24924B] px-6 py-3 rounded-md font-semibold hover:bg-[#E8F6EF] transition">
               <Play className="w-5 h-5" />
-              Watch Demo
+              Watch Demo Video
             </button>
           </div>
         </motion.div>
