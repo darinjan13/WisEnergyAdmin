@@ -17,7 +17,7 @@ function TitleManager() {
 
   useEffect(() => {
     const titles = {
-      "/": "WiseEnergy",
+      "/": "",
       "/w1s3n3r9y-p0rt4l": "Login",
       "/forgot-password": "Forgot Password",
       "/code-verification": "Code Verification",
