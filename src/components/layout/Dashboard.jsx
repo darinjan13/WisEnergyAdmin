@@ -18,16 +18,25 @@ import {
   fetchAllDevices,
   fetchAllReviews,
   fetchAllFeedbacks,
+  fetchAllSubscriptions
 } from "../../../services/apiService";
 
 function Dashboard() {
   const [totalUsers, setTotalUsers] = useState([]);
   const [totalDevices, setTotalDevices] = useState([]);
-  const [reviews, setReviews] = useState([]);
   const [feedback, setFeedback] = useState([]);
   const [avgRating, setAvgRating] = useState(0);
+  const [subscriptions, setSubscriptions] = useState(0);
+  const [ratingDistribution, setRatingDistribution] = useState([]);
 
   useEffect(() => {
+    const fetchSubscriptions = async () => {
+      const result = await fetchAllSubscriptions();
+
+      setSubscriptions(result?.data.length);
+    }
+    fetchSubscriptions();
+
     const fetchUsers = async () => {
       const result = await fetchAllUsers();
       setTotalUsers(result);
@@ -37,6 +46,7 @@ function Dashboard() {
     const fetchDevices = async () => {
       try {
         const result = await fetchAllDevices();
+
         setTotalDevices(result || []);
       } catch (error) {
         setTotalDevices([]);
@@ -47,14 +57,19 @@ function Dashboard() {
 
     const fetchFeedback = async () => {
       const result = await fetchAllFeedbacks();
+
       setFeedback(result);
     };
     fetchFeedback();
 
     const fetchReviews = async () => {
       const result = await fetchAllReviews();
-      setReviews(result);
+      const counts = [1, 2, 3, 4, 5].map((star) => ({
+        name: `${star} Star`,
+        value: result.filter((r) => r.rating === star).length,
+      }));
 
+      setRatingDistribution(counts);
       if (result?.length > 0) {
         const sum = result.reduce((acc, r) => acc + r.rating, 0);
         setAvgRating(sum / result.length);
@@ -85,22 +100,14 @@ function Dashboard() {
   ];
 
   const feedbackTypeData = [
-    { name: "Bug Report", value: 2 },
-    { name: "Suggestion", value: 3 },
-    { name: "Question", value: 3 },
+    { name: "Bug Report", value: feedback.filter(f => f.type === "Bug Report").length },
+    { name: "Suggestion", value: feedback.filter(f => f.type === "Suggestion").length },
+    { name: "Question", value: feedback.filter(f => f.type === "Question").length },
   ];
 
   const deviceStatusData = [
-    { name: "paired", value: 2 },
-    { name: "unpaired", value: 1 },
-  ];
-
-  const ratingDistribution = [
-    { name: "1 Star", value: 0 },
-    { name: "2 Star", value: 0 },
-    { name: "3 Star", value: 0 },
-    { name: "4 Star", value: 1 },
-    { name: "5 Star", value: 8 },
+    { name: "paired", value: totalDevices.filter(d => d.status === "paired").length },
+    { name: "unpaired", value: totalDevices.filter(d => d.status === "unpaired").length },
   ];
 
   const FEEDBACK_COLORS = ["#24924B", "#43A866", "#90D6B0"];
@@ -113,7 +120,7 @@ function Dashboard() {
         <div className="bg-[#24924B] text-white rounded-lg p-6 shadow flex justify-between items-center">
           <div>
             <h3 className="text-lg">Total Users</h3>
-            <p className="text-3xl font-bold">{totalUsers?.length || 9}</p>
+            <p className="text-3xl font-bold">{totalUsers?.length}</p>
           </div>
           <Users className="w-10 h-10 opacity-80" />
         </div>
@@ -121,7 +128,7 @@ function Dashboard() {
         <div className="bg-[#4a8761] text-white rounded-lg p-6 shadow flex justify-between items-center">
           <div>
             <h3 className="text-lg">Total Devices</h3>
-            <p className="text-3xl font-bold">{totalDevices?.length || 3}</p>
+            <p className="text-3xl font-bold">{totalDevices?.length}</p>
           </div>
           <Plug className="w-10 h-10 opacity-80" />
         </div>
@@ -139,7 +146,7 @@ function Dashboard() {
         <div className="bg-[#43A866] text-white rounded-lg p-6 shadow flex justify-between items-center">
           <div>
             <h3 className="text-lg">Total Feedback</h3>
-            <p className="text-3xl font-bold">{feedback?.length || 8}</p>
+            <p className="text-3xl font-bold">{feedback?.length}</p>
           </div>
           <MessageSquare className="w-10 h-10 opacity-80" />
         </div>
@@ -223,7 +230,7 @@ function Dashboard() {
                 <h3 className="text-lg text-gray-700 font-medium mb-1">
                   New Subscriptions (Last 7 Days)
                 </h3>
-                <p className="text-3xl font-bold text-[#24924B]">25</p>
+                <p className="text-3xl font-bold text-[#24924B]">{subscriptions}</p>
               </div>
             </div>
           </div>
