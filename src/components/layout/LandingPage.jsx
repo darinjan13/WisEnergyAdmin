@@ -288,7 +288,7 @@ export default function LandingPage() {
           {[
             {
               name: "Gerard Luis B. Mandado",
-              role: "Hustler",
+              role: "Tester",
               img: "/Gerard.png",
             },
             { name: "Darin Jan D. Soriano", role: "Hacker", img: "/Darin.png" },
@@ -298,7 +298,7 @@ export default function LandingPage() {
               img: "/Twinky.png",
               center: true,
             },
-            { name: "Jholmer L. Damayo", role: "Tester", img: "/Jholmer.png" },
+            { name: "Jholmer L. Damayo", role: "Hustler", img: "/Jholmer.png" },
             { name: "Raily D. Sungahid", role: "Hipster", img: "/Raily.png" },
           ].map((member, i) => (
             <motion.div
@@ -307,8 +307,8 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
               className={`bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl hover:-translate-y-1 transition-all ${member.center
-                  ? "lg:col-span-1 lg:scale-110 border-2 border-gray-200"
-                  : ""
+                ? "lg:col-span-1 lg:scale-110 border-2 border-gray-200"
+                : ""
                 }`}
             >
               <img
