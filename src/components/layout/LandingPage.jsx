@@ -113,11 +113,23 @@ export default function LandingPage() {
             forecasts for smarter, sustainable living.
           </p>
           <div className="flex flex-wrap gap-4 pt-6">
-            <button onClick={() => document.location = 'https://expo.dev/artifacts/eas/97KLPnNfLQPk4rSVe9Q6XP.apk'} className="cursor-pointer flex items-center gap-2 bg-[#24924B] text-white px-6 py-3 rounded-md font-semibold hover:scale-105 transition-transform duration-300 shadow-md">
+            <button
+              onClick={() =>
+                (document.location =
+                  "https://expo.dev/artifacts/eas/2HwbcEbRXn7gkFLn7qPBWh.apk")
+              }
+              className="cursor-pointer flex items-center gap-2 bg-[#24924B] text-white px-6 py-3 rounded-md font-semibold hover:scale-105 transition-transform duration-300 shadow-md"
+            >
               <Download className="w-5 h-5" />
               Download Now
             </button>
-            <button onClick={() => document.location = 'https://www.youtube.com/watch?v=3zl-Vu-lecY'} className="cursor-pointer flex items-center gap-2 border border-[#24924B] text-[#24924B] px-6 py-3 rounded-md font-semibold hover:bg-[#E8F6EF] transition">
+            <button
+              onClick={() =>
+                (document.location =
+                  "https://www.youtube.com/watch?v=3zl-Vu-lecY")
+              }
+              className="cursor-pointer flex items-center gap-2 border border-[#24924B] text-[#24924B] px-6 py-3 rounded-md font-semibold hover:bg-[#E8F6EF] transition"
+            >
               <Play className="w-5 h-5" />
               Watch Demo Video
             </button>
@@ -306,10 +318,11 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className={`bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl hover:-translate-y-1 transition-all ${member.center
-                ? "lg:col-span-1 lg:scale-110 border-2 border-gray-200"
-                : ""
-                }`}
+              className={`bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-xl hover:-translate-y-1 transition-all ${
+                member.center
+                  ? "lg:col-span-1 lg:scale-110 border-2 border-gray-200"
+                  : ""
+              }`}
             >
               <img
                 src={member.img}
