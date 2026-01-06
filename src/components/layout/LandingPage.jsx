@@ -116,7 +116,7 @@ export default function LandingPage() {
             <button
               onClick={() =>
                 (document.location =
-                  "https://expo.dev/artifacts/eas/2HwbcEbRXn7gkFLn7qPBWh.apk")
+                  "https://expo.dev/artifacts/eas/5boKn9qwNApoQfXk11DcmC.apk")
               }
               className="cursor-pointer flex items-center gap-2 bg-[#24924B] text-white px-6 py-3 rounded-md font-semibold hover:scale-105 transition-transform duration-300 shadow-md"
             >
